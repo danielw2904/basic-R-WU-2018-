@@ -13,6 +13,8 @@
 
 ## Software downloads
 
+*** You don't have to install anything beforehands - We'll set up R at the beginning of the first session ***
+
 ### R
 
 - Debian/Ubuntu: `sudo apt install r-base`
