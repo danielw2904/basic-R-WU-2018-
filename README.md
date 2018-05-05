@@ -28,3 +28,7 @@
 ### R-Studio
 
 https://www.rstudio.com/products/rstudio/download/#download
+
+## Data downloads
+
+https://www.kaggle.com/c/rossmann-store-sales/data
