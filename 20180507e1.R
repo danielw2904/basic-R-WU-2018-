@@ -388,19 +388,17 @@ df2[['gender']]
 df2$inc
 df$var
 
-
-
 (df3 <- df2[order(df2$income), ])
 
 # Lists can hold anything
 data.frame(nums = 1:10, chars = letters[1:9])
 L <- list(nums = 1:10, chars = letters[1:9])
-
+L
 L2 <- list(all = list(rep(L, 5)), another = matrix(1:10, nrow = 3))
 L2$all[[1]][1]
 L2$another
 
-
+## Data Visualization
 
 t <- seq(0,1,length.out = 100)
 x <- t*sin(2*pi*t)
@@ -426,6 +424,8 @@ legend(x = "bottomright",legend = c("t", "t^2", "y"),
 plot(df2$income~df2$gender)
 boxplot(df2$income~df2$gender, ylab = "Income", xlab = "Gender")
 boxplot(df2$income~df2$gender, horizontal = TRUE)
+plot(df2$income, type = 'p')
+plot(df2$income, type = 'b')
 
 # Why does this subsetting work?
 plot(sort(df2$income[df2$gender=="F"]), col = 'green', axes = FALSE, 
@@ -445,42 +445,293 @@ text(x = c(1:2), y = sort(df2$income[df2$gender=="M"]), labels = "M", pos = 3)
 
 (counts <- table(df2$gender))
 
-barplot(counts)
+barplot(counts, col = c('green', 'blue'))
 
 df2$area <- sample(c("city", "rural"), size = 6, replace = TRUE)
 (ncounts <- table(df2$gender,df2$area ))
 mosaicplot(ncounts, color = TRUE, main = "Area")
 
-plot(density(df2$income[df2$gender=='F']), xlim = c(700, 1600), col = 'green', 
-     main = 'Density of Income by Gender')
+plot(density(df2$income[df2$gender=='F']),
+     xlim = c(700, 1600), 
+     ylim = c(0, 0.05),
+     col = 'green', 
+     main = 'Density of Income by Gender',
+     lty = 2)
 lines(density(df2$income[df2$gender=='M']), col = 'red')
-legend(x='topleft', legend=c("F", "M"), lty=1, col = c('green', 'red'))
+legend(x='topleft', 
+       legend=c("F", "M"), 
+       lty=c(2,1), 
+       col = c('green', 'red'))
 
 par(mfrow=c(3,1))
 plot(density(df2$income), main = "All")
 plot(density(df2$income[df2$gender=="M"]), main = "M")
 plot(density(df2$income[df2$gender=="F"]), main = "F")
-
+par(mfrow=c(1,1))
 ##################
 ### Exercise 3 ###
 ##################
 
-# install.packges(ggplot2)
-library(ggplot2)
-df3 <- data.frame(gender = sample(c("M", "F"), size = 100, replace = TRUE),
-                  income = rnorm(100, 500, 100))
-hist(df3$income)
+### Packages ###
 
-ggplot(df3, aes(income))+
-  geom_histogram(binwidth = 30)
+# Set seed for reproducible results
+set.seed(1234)
+install.packages(c("tidyverse", "AER"))
+library(tidyverse)
+df3 <- data.frame(gender = factor(sample(c("M", "F"), size = 100, replace = TRUE)),
+                  parentIncomeAt15 = rnorm(100, 500, 100),
+                  area = factor(sample(c("city", "rural"), size = 100, replace = TRUE)),
+                  education = factor(sample(c("Primary", "Secondary", "Tertiary"), size = 100, replace = TRUE)),
+                  stringsAsFactors = FALSE)
+
+df3$income <- 500 + 
+  10 * df3$parentIncomeAt15 -
+  0.01 * df3$parentIncomeAt15^2 + # infliction point at 500
+  900 * ifelse(df3$education=="Tertiary", 1, 0) + 
+  500 * ifelse(df3$education == "Secondary", 1, 0) +
+  100 * ifelse(df3$gender == "F", 1, 0) +
+   50 * ifelse(df3$area == "city", 1, 0) +
+  200 * ifelse(df3$education == "Tertiary" & df3$gender == "F", 1, 0) +
+  rnorm(100, sd = 10)
+
+ggplot(df3, aes(x = income)) +
+  geom_histogram(binwidth = 30, aes(y = ..density..)) 
 
 ggplot(df3)+
-  geom_density(aes(income))
+  geom_density(aes(x = income, fill = area, linetype = education), alpha = 0.6) +
+  labs(title = 'Density of Income', 
+       subtitle = 'by area and education', 
+       caption = "Source: Daniel's made up data") 
+  
 
 ggplot(df3)+
-  geom_boxplot(aes(x = gender, y = income))
+  geom_boxplot(aes(x = education, y = income)) +
+  facet_wrap(~gender)
 
 ggplot(df3)+
-  geom_line(aes(x = 1:100, y = sort(income), color = gender))+
-  geom_point(aes(x = 1:100, y = sort(income), color = gender))+
-  labs(x="", y='Income', title='Income', subtitle="By Gender")
+  geom_line(aes(x = 1:100, y = sort(income), color = area))+
+  geom_point(aes(x = 1:100, y = sort(income), color = area, shape = area))+
+  labs(x="", y='Income', title='Income', subtitle="By Area") 
+
+ggplot(df3) +
+  geom_point(aes(x = parentIncomeAt15, y = income, color=gender)) +
+  labs(x = "Parents' income at 15", title = "Intergenerational mobility") +
+  facet_wrap(~area) +
+  theme(legend.title = element_blank()) +
+  scale_x_continuous(breaks = c(200, 400, 600, 700))
+
+ggplot(df3) +
+  geom_point(aes(x = parentIncomeAt15, y = income, color=gender, shape = gender)) +
+  labs(x = "Parents' income at 15", title = "Intergenerational mobility") +
+  facet_grid(education~area)
+
+### Econometrics
+# Distributions
+rnorm(10, mean = 10, sd = 1) # random numbers
+dx <- density(rnorm(1000), bw = "nrd0", adjust = 1, kernel = "epanechnikov") # density estimate
+dx
+plot(dx)
+
+pnorm(5, mean = 5, sd = 10) # CDF
+plot(function(x)pnorm(x, 5, 1), xlim = c(0, 10))
+
+dnorm(5, mean = 5, sd = 1) # PDF
+plot(function(x)dnorm(x, 5, 1), xlim = c(0, 10))
+
+# Same for other distributions
+rt(10, df = 10)
+rf(10, df1 = 10, df2 = 5)
+runif(10)
+rgamma(10, shape = 4)
+rchisq(10, df = 1)
+rlnorm(10)
+?distributions
+
+# Create some data
+x <- runif(100, 0, 10)
+y <- 5 + 3*x + rnorm(100)
+
+# Formula
+model <- y ~ x
+class(model)
+
+# OLS
+ols1 <- lm(model)
+ols1
+
+summary(ols1)
+AIC(ols1)
+BIC(ols1)
+
+# Testing Model assumptions
+
+# Heteroskedasticity
+residuals1 <- residuals(ols1)
+fitted1 <- fitted(ols1)
+plot(residuals1~fitted1)
+# Normality
+qqnorm(residuals1)
+shapiro.test(residuals1)
+
+# Autocorrelation
+acf(residuals1)
+
+# Optional: What are we doing?
+X <- cbind(1,x)
+xxinv <- solve(crossprod(X))
+beta <- xxinv %*% crossprod(X, y)
+df <- length(y) - ncol(X)
+resids <- y - X %*% beta
+Sigmasq <- as.numeric(crossprod(resids)/df)
+vcov <- xxinv * Sigmasq
+sds <- sqrt(diag(vcov))
+tval <- beta/sds
+pval <- 2*pt(abs(tval), df = df, lower.tail = FALSE)
+beta
+sds
+pval
+
+# White standard errors
+u2 <- diag(residuals1^2)
+X <- cbind(1,x)
+xxinv <- solve(crossprod(X))
+vcov <- xxinv %*% crossprod(X, u2) %*% X %*% xxinv
+colnames(vcov) <- c("intercept", "x")
+robse <- sqrt(diag(vcov))
+names(robse) <- c("intercept", "x")
+robse
+tval_robust <- beta/robse
+p_robust <- 2*pt(abs(tval_robust), df = df, lower.tail = FALSE)
+tval_robust
+p_robust
+
+# External Packages
+library(AER)
+coeftest(ols1, vcov = vcov)
+
+library(stargazer)
+stargazer(ols1, se = list(robse2), type = "text")
+
+(ct <- coeftest(ols1, vcov = vcovHC, type = "HC0"))
+stargazer(ct, type = "text")
+
+# Heteroskedasticity
+
+x <- runif(1000, 10, 100)
+y <- 40 +  5 * x + rnorm(1000, sd = x)
+mod <- lm(y~x)
+plot(y~x)
+lines(fitted(mod)~x, col = 'red')
+plot(residuals(mod)~fitted(mod))
+abline(h = c(60, -60), col = 'red')
+
+summary(mod)
+ct <- coeftest(mod, vcov = vcovHC, type = "HC1")
+stargazer(ct, type = 'text')
+
+# "Real Model"
+
+model <- income ~ parentIncomeAt15 + gender + area + education + gender:education
+ols <- lm(model, data = df3)
+summary(ols)
+ols2 <- update(ols, . ~ . + I(parentIncomeAt15^2))
+summary(ols2)
+
+library(AER)
+(ct <- coeftest(ols2, vcov = vcovHC, type = "HC3"))
+library(stargazer)
+stargazer(ct, type = "text")
+
+#install.packages('latex2exp')
+library(latex2exp)
+ggplot(df3) +
+  geom_smooth(aes(x = parentIncomeAt15, y = income),
+              method = 'loess', level = 0.99) +
+  labs(y = "Parents' income at age 15", title = "Intergenerational mobility", 
+       subtitle = TeX('$income = \\alpha + \\beta_1 parent Income + \\beta_2 (parent Income)^2 + \\epsilon $'))+
+  annotate("text", x = 500, y = 2600, 
+           label = as.character(TeX('Income $ = \\alpha + \\beta_1 parent Income + \\beta_2 (parent Income)^2 + \\epsilon $')),
+           parse = TRUE) +
+  labs(caption = TeX('Income $ = \\alpha + \\beta_1 parent Income + \\beta_2 (parent Income)^2 + \\epsilon $'))
+
+# Probit/logit
+affairs <- Affairs
+head(affairs)
+affairs$hadAffair <- ifelse(affairs$affairs > 0, 1, 0)
+mod <- hadAffair ~ gender + age + yearsmarried + children + religiousness + education + rating
+out <- glm(mod, family = binomial(link = 'probit'), data = affairs)
+summary(out)
+
+# Poisson
+# E[Y|X] = exp(x'B)
+modCount <- update(mod, affairs ~ . )
+outCount <- glm(modCount, family = poisson, data = affairs)
+summary(outCount)
+dispersiontest(outCount)
+
+# Tobit
+outTobit <- tobit(modCount, left = 0, data = affairs)
+summary(outTobit)
+
+# Time Series Econometrics
+
+library(eurostat)
+library(forecast)
+youthUne <- get_eurostat("tipslm80", filters = list(geo = "AT", unit = "PC_ACT"))
+ggplot(youthUne) +
+  geom_line(aes(x = time, y = values))
+yu_ts <- youthUne$values[order(youthUne$time)]
+yu_ts <- ts(yu_ts, start = 1995, end = 2017, frequency = 1)
+armod <- Arima(yu_ts, order = c(1,0,0))
+summary(armod)
+plot(forecast(armod, 30))
+
+data("UKDriverDeaths")
+plot(UKDriverDeaths, main = 'Driver Deaths')
+
+season <- seasonaldummy(UKDriverDeaths)
+trend <- 1:length(UKDriverDeaths)
+# De-trend and de-season
+mod <- lm(UKDriverDeaths ~ season + trend )
+summary(mod)
+res <- residuals(mod)
+plot(res, type = "l")
+Acf(res)
+Pacf(res)
+
+armod <- Arima(res, order = c(1,0,0))
+summary(armod)
+plot(forecast(armod, 10))
+
+mod2 <- auto.arima(UKDriverDeaths)
+summary(mod2)
+plot(forecast(mod2, 30))
+
+# some more visualization
+
+une_s <- search_eurostat("unemployment", type = "table")
+une_c <- une_s$code[une_s$title == 'Total unemployment rate']
+une_d <- get_eurostat(id = une_c, filters = )
+View(une_d)
+une_d <- une_d[une_d$unit == 'PC_ACT', ]
+countries <- c("AT", "DE", "DK")
+une_d <- une_d[une_d$geo %in% countries, ]
+
+une_wide <- spread(une_d, key = geo, value = values)
+une_wide$time <- format(une_wide$time, "%Y")
+library(xtable)
+une_t <- xtable(une_wide[, 4:7], caption = "Unemployment rate")
+print(une_t, type = 'latex', include.rownames = FALSE)
+
+library(knitr)
+kable(une_wide[, 4:7], format = 'markdown')
+
+ggplot(une_wide) +
+  geom_point(aes(x = time, y = AT)) +
+  geom_point(aes(x = time, y = DE), color = 'red')
+ 
+une_long <- gather(une_wide[, 4:7], key = "Country", value = "une", -time) 
+une_long
+ggplot(une_long) +
+  geom_point(aes(x = time, y = une, color = Country)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
