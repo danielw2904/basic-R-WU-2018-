@@ -1,0 +1,51 @@
+---
+title: "My Report"
+author: "Daniel Winkler"
+date: "May 14, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## R Markdown
+
+My text here.... 
+
+```{r unemployment, echo = FALSE}
+library(eurostat)
+library(tidyr)
+une_s <- search_eurostat("unemployment", type = "table")
+une_c <- une_s$code[une_s$title == 'Total unemployment rate']
+une_d <- get_eurostat(id = une_c)
+une_d <- une_d[une_d$unit == 'PC_ACT', ]
+countries <- c("AT", "DE", "DK")
+une_d <- une_d[une_d$geo %in% countries, ]
+
+une_wide <- spread(une_d, key = geo, value = values)
+une_wide$time <- format(une_wide$time, "%Y")
+library(knitr)
+kable(une_wide[, 4:7], caption = "Unemployment rate")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+library(ggplot2)
+ggplot(une_d) +
+  geom_line(aes(x = time, y = values, color = geo)) +
+  geom_point(aes(x = time, y = values, color = geo, shape = geo)) +
+  labs(y = 'Unemployment Rate', x = 'Year', title = "Unemployment during the crisis") +
+  theme(legend.title = element_blank())
+```
+
+## Some Math
+
+$$
+u = \alpha + \beta_1 i + \beta_2 \pi + \beta_3 y + \varepsilon
+$$

@@ -388,13 +388,13 @@ df2[['gender']]
 df2$inc
 df$var
 
-(df3 <- df2[order(df2$income), ])
+(df3 <- df2[order(df2$gender), ])
 
 # Lists can hold anything
 data.frame(nums = 1:10, chars = letters[1:9])
 L <- list(nums = 1:10, chars = letters[1:9])
 L
-L2 <- list(all = list(rep(L, 5)), another = matrix(1:10, nrow = 3))
+L2 <- list(all = list(rep(L, 5)), another = matrix(1:19, nrow = 3))
 L2$all[[1]][1]
 L2$another
 
@@ -405,26 +405,30 @@ x <- t*sin(2*pi*t)
 y <- t*cos(2*pi*t)
 
 plot(x,y, type = "l",
-     col = "blue",
+     col = "red",
      main = "Last Math Test",
      sub = "... would've been easier with R",
      xlab = "x(t)", ylab = "y(t)",
      xlim = c(-1,0.5),
      ylim = c(-.75, 1))
-
+plot(x,y)
 
 
 plot(t, type = 'l', col = 'blue',
-     ylim = c(-0.75, 1))
-lines(t^2, col = 'green')
-lines(y, col = 'red')
+     ylim = c(-0.75, 1), lty = 2)
+
+lines(t^2, col = 'green', lty = 3)
+
+lines(y, col = 'red', lty = 4)
+
 legend(x = "bottomright",legend = c("t", "t^2", "y"), 
-       col = c("blue", "green", "red"), lty=1)
+       col = c("blue", "green", "red"), lty=c(2,3,4))
 
 plot(df2$income~df2$gender)
 boxplot(df2$income~df2$gender, ylab = "Income", xlab = "Gender")
 boxplot(df2$income~df2$gender, horizontal = TRUE)
 plot(df2$income, type = 'p')
+plot(df2$income)
 plot(df2$income, type = 'b')
 
 # Why does this subsetting work?
@@ -433,7 +437,7 @@ plot(sort(df2$income[df2$gender=="F"]), col = 'green', axes = FALSE,
      xlab = "",
      ylab = "Income")
 points(sort(df2$income[df2$gender=="M"]), col = 'red')
-axis(side = 1, 1:4)
+axis(side = 1, c(1,3,4))
 axis(side = 2, seq(round(min(df2$income),3), max(df2$income), length.out = 5))
 box()
 abline(h = seq(round(min(df2$income),3), max(df2$income), length.out = 5), lty='dashed',
@@ -450,11 +454,11 @@ barplot(counts, col = c('green', 'blue'))
 df2$area <- sample(c("city", "rural"), size = 6, replace = TRUE)
 (ncounts <- table(df2$gender,df2$area ))
 mosaicplot(ncounts, color = TRUE, main = "Area")
-
+png(filename = "/home/daniel/greatplot.png")
 plot(density(df2$income[df2$gender=='F']),
      xlim = c(700, 1600), 
-     ylim = c(0, 0.05),
-     col = 'green', 
+     ylim = c(0, 0.03),
+     col = 'blue', 
      main = 'Density of Income by Gender',
      lty = 2)
 lines(density(df2$income[df2$gender=='M']), col = 'red')
@@ -462,7 +466,7 @@ legend(x='topleft',
        legend=c("F", "M"), 
        lty=c(2,1), 
        col = c('green', 'red'))
-
+dev.off()
 par(mfrow=c(3,1))
 plot(density(df2$income), main = "All")
 plot(density(df2$income[df2$gender=="M"]), main = "M")
@@ -476,7 +480,7 @@ par(mfrow=c(1,1))
 
 # Set seed for reproducible results
 set.seed(1234)
-install.packages(c("tidyverse", "AER"))
+# install.packages(c("tidyverse", "AER"))
 library(tidyverse)
 df3 <- data.frame(gender = factor(sample(c("M", "F"), size = 100, replace = TRUE)),
                   parentIncomeAt15 = rnorm(100, 500, 100),
@@ -495,9 +499,9 @@ df3$income <- 500 +
   rnorm(100, sd = 10)
 
 ggplot(df3, aes(x = income)) +
-  geom_histogram(binwidth = 30, aes(y = ..density..)) 
+  geom_histogram(binwidth = 30, aes(y = ..count..)) 
 
-ggplot(df3)+
+ggplot(df3) +
   geom_density(aes(x = income, fill = area, linetype = education), alpha = 0.6) +
   labs(title = 'Density of Income', 
        subtitle = 'by area and education', 
@@ -612,7 +616,7 @@ coeftest(ols1, vcov = vcov)
 library(stargazer)
 stargazer(ols1, se = list(robse2), type = "text")
 
-(ct <- coeftest(ols1, vcov = vcovHC, type = "HC0"))
+(ct <- coeftest(ols1, vcov = vcovHC, type = "HC1"))
 stargazer(ct, type = "text")
 
 # Heteroskedasticity
@@ -631,7 +635,7 @@ stargazer(ct, type = 'text')
 
 # "Real Model"
 
-model <- income ~ parentIncomeAt15 + gender + area + education + gender:education
+model <- income ~ parentIncomeAt15 + gender + area + education + gender*education
 ols <- lm(model, data = df3)
 summary(ols)
 ols2 <- update(ols, . ~ . + I(parentIncomeAt15^2))
@@ -655,11 +659,12 @@ ggplot(df3) +
   labs(caption = TeX('Income $ = \\alpha + \\beta_1 parent Income + \\beta_2 (parent Income)^2 + \\epsilon $'))
 
 # Probit/logit
+data("Affairs")
 affairs <- Affairs
 head(affairs)
 affairs$hadAffair <- ifelse(affairs$affairs > 0, 1, 0)
 mod <- hadAffair ~ gender + age + yearsmarried + children + religiousness + education + rating
-out <- glm(mod, family = binomial(link = 'probit'), data = affairs)
+out <- glm(mod, family = binomial(link = 'logit'), data = affairs)
 summary(out)
 
 # Poisson
@@ -710,7 +715,7 @@ plot(forecast(mod2, 30))
 # some more visualization
 
 une_s <- search_eurostat("unemployment", type = "table")
-une_c <- une_s$code[une_s$title == 'Total unemployment rate']
+une_une_c <- une_s$code[une_s$title == 'Total unemployment rate']
 une_d <- get_eurostat(id = une_c, filters = )
 View(une_d)
 une_d <- une_d[une_d$unit == 'PC_ACT', ]
