@@ -7,8 +7,8 @@
    
    First Presentation: https://filedn.com/lc3jP13muUSfaglUGN8CcMB/pres1.html#(1)
    
-- ~~Mon, May 14 2018	18:00-20:00	
-   + D5.0.002 Auditorium (60)~~
+- ~~Mon, May 14 2018	18:00-20:00~~	
+   + ~~D5.0.002 Auditorium (60)~~
    
 - Mon, May 28 2018	18:00-20:00	
    + D5.0.002 Auditorium (60)
