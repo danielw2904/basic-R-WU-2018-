@@ -3,14 +3,14 @@ title: "My Report"
 author: "Daniel Winkler"
 date: "May 14, 2018"
 output:
+  html_document:
+    df_print: paged
   pdf_document:
     df_print: kable
     fig_width: 5
     fig_height: 3
     keep_tex: true
     latex_engine: xelatex
-  html_document:
-    df_print: paged
 bibliography: biblio.bib
 ---
 
@@ -24,7 +24,8 @@ My text here.... [see @gadea18, p. 18; @silverman18, p. 4]
 
 Some more text, according to @gadea18 [p. 12]. And another fact from a differnt page [-@gadea18, p. 25]
 
-```{r unemployment, echo = FALSE}
+
+```{r unemployment, echo = TRUE}
 library(eurostat)
 library(tidyr)
 une_s <- search_eurostat("unemployment", type = "table")
@@ -44,7 +45,7 @@ kable(une_wide[, 4:7], caption = "Unemployment rate")
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
+```{r pressure, echo=FALSE, warning=TRUE}
 library(ggplot2)
 ggplot(une_d) +
   geom_line(aes(x = time, y = values, color = geo)) +
@@ -59,5 +60,6 @@ $$
 u = \alpha + \beta_1 i + \beta_2 \pi + \beta_3 y + \varepsilon
 $$
 
+$\beta$ is great!
 
 ## References

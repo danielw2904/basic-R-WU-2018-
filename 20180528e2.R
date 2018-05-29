@@ -2,7 +2,7 @@ rm(list = ls())
 library(eurostat)
 une_s <- search_eurostat("unemployment", type = "table")
 une_c <- une_s$code[une_s$title == 'Total unemployment rate']
-une_d <- get_eurostat(id = une_c, filters = )
+une_d <- get_eurostat(id = une_c)
 View(une_d)
 une_d <- une_d[une_d$unit == 'PC_ACT', ]
 countries <- c("AT", "DE", "DK")
@@ -13,7 +13,7 @@ une_d <- une_d[une_d$geo %in% countries, ]
 library(tidyverse)
 une_wide <- spread(une_d, key = geo, value = values)
 une_wide$time <- format(une_wide$time, "%Y")
-une_wide[, 4:6]
+une_wide[, 4:7]
 
 library(xtable)
 une_t <- xtable(une_wide[, 4:7], caption = "Unemployment rate")
@@ -43,25 +43,34 @@ ggplot(une_long) +
 (une_long2 <- rename(une_long, unemployment = une))
 
 # Sorting
-arrange(une_long2, desc(unemployment), desc(time))
+arrange(une_long2, desc(unemployment), (time))
 
 # Aggregate
 aggregate(une_long$une, by = list(time = une_long$time), FUN = mean)
+
+# dplyr
+une_long %>%
+  group_by(time) %>%
+  summarize(mean(une))
 
 # Medium Data
 library(data.table)
 group <- sample(LETTERS, size = 1e7, replace = TRUE)
 values <- rnorm(1e7, 10, 100) 
 dt <- data.table(group, values)
+setkey(dt, group)
+
 tables()
+
+df[row, column]
+dt[group == 'Z', mean(values),]
 
 dt[, .(Mean = mean(values), SD = sd(values), N = .N), by = group]
 
 dt2 <- dt
 dt2[, Sqs := values^2]
-dt2[, lapply(.SD, mean), by = group]
 
-setkey(dt, group)
+dt2[ , lapply(.SD, mean), by = group]
 
 library(microbenchmark)
 microbenchmark(
@@ -90,6 +99,7 @@ data(mtcars)
 head(mtcars)
 
 setwd("~/pCloudDrive/Daniel/studiVertretung/rKurs")
+
 write_dta(data = mtcars, "./mtcars.dta")
 write_sas(mtcars, "./mtcars.sas")
 write_sav(mtcars, "./mtcars.sav")
@@ -110,8 +120,9 @@ head(read.csv("mtcars.csv", sep = ';', dec = ',',
 
 # Excel Not recommended
 library(readxl)
-read_excel("Test_Data.xlsx", sheet = "Sheet1", na = "NA" , col_names = TRUE)
+df <- read_excel("Test_Data.xlsx", sheet = "Sheet1", na = "NA" , col_names = TRUE)
 
+df[6,6] <- NA
 ### Loops ###
 
 # Simulate a random walk
@@ -187,6 +198,16 @@ myFun <- function(x, y, z){
 
 myFun(1,2,3)
 
+fix <- function(x){
+  x[x == "N/a"] <- NA
+  return(x)
+}
+
+fix(df$`Avg. Successful Speed (mm/s)`)
+
+df2 <- lapply(X = df, fix)
+
+
 stationaryDist <- function(gamma){
   p12 <- gamma[1,2]
   p21 <- gamma[2,1]
@@ -214,7 +235,7 @@ euplot <- function(data, title="", y=""){
     labs(caption = "Source: Eurostat 2017, own calculations")
 }
 
-euplot(une_d, title = 'Unemployment', y = 'percent of working population')
+euplot(une_d, y = 'percent of working population') + ggtitle("Unemployment")
 
 euplot(une_d) + 
   ggtitle("Unemployment Extra") +
@@ -225,6 +246,7 @@ summary2 <- function(x){
 }
 summary2(mtcars$mpg)
 
+summary2(mtcars$mpg, mtcars$cyl)
 # Vectorize
 # *apply
 # Example based on 
@@ -251,7 +273,7 @@ myFun2 <- function(...){
   lapply(input, mean)
 }
 
-myFun2(1:10, 2:11, 3:12)
+myFun2(1:10, 2:11, 3:12, 1:10)
 
 # Apply by group
 (wtByCyl <- tapply(X = mtcars$wt, INDEX = mtcars$cyl, FUN = summary2))
