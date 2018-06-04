@@ -36,6 +36,10 @@
 
 https://www.rstudio.com/products/rstudio/download/#download
 
+### Git
+
+https://git-scm.com/downloads
+
 ## Data downloads
 
 https://groups.csail.mit.edu/drl/wiki/index.php?title=File:Test_Data.xlsx
