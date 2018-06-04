@@ -40,6 +40,8 @@ https://www.rstudio.com/products/rstudio/download/#download
 
 https://git-scm.com/downloads
 
+https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/#platform-linux
+
 ## Data downloads
 
 https://groups.csail.mit.edu/drl/wiki/index.php?title=File:Test_Data.xlsx
