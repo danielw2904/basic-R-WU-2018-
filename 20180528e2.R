@@ -309,3 +309,93 @@ mtcars[, 1:3] <- lapply(mtcars[,1:3], as.character)
 str(mtcars)
 mtcars[, 1:3] <- lapply(mtcars[,1:3], as.numeric)
 str(mtcars)
+
+# Some more datahandling
+library(tidyverse)
+x <- data.frame(num = 1:10, char = letters[1:10], stringsAsFactors = FALSE)
+y <- data.frame(num = c(1:4, 6, 6:10), char = letters[c(1:4, 6, 6:10)], stringsAsFactors = FALSE)
+x;y
+intersect(x,y)
+union(x,y)
+
+y$new <- rnorm(10)
+full_join(x,y)
+left_join(x,y)
+right_join(x,y)
+y <- rename(y, charNew = char)
+full_join(x,y, by = c("char" = "charNew", "num"))
+
+# Remove duplicates
+y2 <- y[!duplicated(y$char),]
+
+# Recode variables
+y2$charNew <- recode(y2$charNew, "a" = "Aardwark")
+
+# Combine/Separate
+y2$comb <- paste(y2$num, y2$charNew, sep = "_")
+y2
+y3 <- separate(y2, col = comb, into = c('first', 'second'), sep = '_')
+y3
+
+y3 <- separate(y3, col = new, into = c('int', 'digit'), sep = '\\.')
+y3
+
+# While loops
+z <- 100
+div <- 1
+
+while(z > 0.0001){
+  z <- z/div # Change in condition
+  div <- div + 1 # Change function 
+  print(z)
+}
+
+# Recursion
+fib <- function(n){
+  if(n <= 1){ # terminal condition
+    return(n)
+  } else{
+    return(fib(n-1) + fib(n-2)) # recursion step
+  }
+}
+sapply(1:10, fib)
+
+# Web extraction
+library(rvest)
+URL <- 'https://en.wikipedia.org/wiki/Poverty'
+page <- read_html(URL)
+table <- html_node(page, "table.wikitable") %>% html_table(fill = TRUE)
+table
+data <- table[2:8, c(1:4, 6:7)]
+oneD <- data.frame(data[1:6, 1:4])
+colnames(oneD) <- c("Region", "1990", "2002", "2004")
+oneD
+oneD_long <- gather(oneD, key = "year", value = "povertyrate", -Region)
+oneD_long
+
+library(stringr)
+africa <- str_detect(oneD_long$Region, "Africa")
+oneD_long[africa,]
+str_replace_all(oneD_long$Region, pattern = " and ", ", ")
+
+# Regex
+str <- "accccbb"
+str_extract(str, "[a-z]{7}")
+
+str2 <- "12345"
+str_extract(str2, "[a-z]*[1-9]")
+
+str3 <- "abc123"
+str_extract(str3, "[a-z]*[1-9]")
+
+str_extract(str3, "(?<=c)[0-9]")
+str_extract_all(str3, "[a-z](?=1)")
+str_extract_all(str3, "[a-z]")
+str_extract_all(str3, "[^0-9]")
+
+str_extract_all(str3, "[a-z]?")
+str_extract_all(str3, "[a-z]*")
+
+strs <- c(str, str2, str3)
+str_detect(strs, "^[a-z]")
+str_detect(strs, "[1-9]$")

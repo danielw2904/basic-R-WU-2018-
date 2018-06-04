@@ -131,6 +131,20 @@ $(document).ready(function () {
 <div id="r-markdown" class="section level2">
 <h2>R Markdown</h2>
 <p>My text here…. <span class="citation">(see Gadea-Rivas, Gómez-Loscos, and Bandrés 2018, 18; Silverman 2018, 4)</span></p>
+<p>Some more text, according to <span class="citation">Gadea-Rivas, Gómez-Loscos, and Bandrés (2018, 12)</span>. And another fact from a differnt page <span class="citation">(2018, 25)</span></p>
+<pre class="r"><code>library(eurostat)
+library(tidyr)
+une_s &lt;- search_eurostat(&quot;unemployment&quot;, type = &quot;table&quot;)
+une_c &lt;- une_s$code[une_s$title == 'Total unemployment rate']
+une_d &lt;- get_eurostat(id = une_c)
+une_d &lt;- une_d[une_d$unit == 'PC_ACT', ]
+countries &lt;- c(&quot;AT&quot;, &quot;DE&quot;, &quot;DK&quot;)
+une_d &lt;- une_d[une_d$geo %in% countries, ]
+
+une_wide &lt;- spread(une_d, key = geo, value = values)
+une_wide$time &lt;- format(une_wide$time, &quot;%Y&quot;)
+library(knitr)
+kable(une_wide[, 4:7], caption = &quot;Unemployment rate&quot;)</code></pre>
 <table>
 <caption>Unemployment rate</caption>
 <thead>
@@ -227,6 +241,7 @@ $(document).ready(function () {
 <p><span class="math display">\[
 u = \alpha + \beta_1 i + \beta_2 \pi + \beta_3 y + \varepsilon
 \]</span></p>
+<p><span class="math inline">\(\beta\)</span> is great!</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
