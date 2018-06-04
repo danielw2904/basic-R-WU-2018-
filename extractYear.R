@@ -6,4 +6,3 @@ format(tutorialDates, "%Y")
 
 library(lubridate)
 year(tutorialDates)
-# Wow that's great
