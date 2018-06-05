@@ -1,5 +1,7 @@
 # Repository for the Studienvertretung-VW-SozÖk-Seep R-Kurs Summer 2018
 
+SEE YOU NEXT SEMESTER. ;)
+
 ## Dates & Location
 
 - ~~Mon, May 7  2018	18:00-20:00~~
@@ -13,8 +15,8 @@
 - ~~Mon, May 28 2018	18:00-20:00~~	
    + ~~D5.0.002 Auditorium (60)~~
    
-- Mon, Jun 4  2018	18:00-20:00	
-   + D5.0.002 Auditorium (60)
+- ~~Mon, Jun 4  2018	18:00-20:00~~
+   + ~~D5.0.002 Auditorium (60)~~
 
 ## Software downloads
 
